@@ -1,7 +1,7 @@
 // ==================== 互动留言花园（Supabase多人版）====================
 
 // ✅ 填入你的 Supabase 配置
-const SUPABASE_URL = 'https://grtvkhynvnzktjbwdiir.supabase.co/rest/v1/';      // 如 https://xxx.supabase.co
+const SUPABASE_URL = 'https://grtvkhynvnzktjbwdiir.supabase.co';      // 如 https://xxx.supabase.co
 const SUPABASE_KEY = 'sb_publishable_9WSmB5E23b7C_XmyMGoi1A_zaBv8XSP';  // eyJ 开头
 
 
