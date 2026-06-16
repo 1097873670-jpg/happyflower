@@ -56,11 +56,11 @@ const CONFIG = {
     // 照片墙配置（新增）
     photos: [
         {
-            url: 'images/IMG_0237.JPG',
+            url: 'images/beijing.JPG',
             title: '北京 💕'
         },
         {
-            url: 'images/IMG_1064.JPG',
+            url: 'images/daban.JPG',
             title: '一起看的日落 🌅'
         },
         {
