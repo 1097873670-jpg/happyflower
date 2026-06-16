@@ -188,7 +188,8 @@ function init() {
     setTimeout(() => {
         document.getElementById('loading').style.display = 'none';
     }, 1200);
-
+    // 初始化室外触摸旋转
+    initGardenOrbitControl();
     animate();
 }
 
@@ -242,3 +243,136 @@ function animate() {
 }
 
 window.addEventListener('load', init);
+// ==================== 室外场景触摸/鼠标旋转视角 ====================
+
+let _gardenOrbit = {
+    active: true,
+    dragging: false,
+    lastX: 0,
+    lastY: 0,
+    theta: 0,       // 水平角
+    phi: 0.55,      // 垂直角
+    radius: 26,     // 相机距离
+    target: new THREE.Vector3(0, 2, 0),  // 看向场景中心
+    pinchDist: 0    // 双指缩放距离
+};
+
+function initGardenOrbitControl() {
+    const canvas = document.getElementById('canvas3d');
+    if (!canvas) return;
+
+    // 初始化球坐标（根据初始相机位置）
+    _gardenOrbit.theta = 0;
+    _gardenOrbit.phi = 0.55;
+    _gardenOrbit.radius = 26;
+
+    // ── 鼠标 ──
+    canvas.addEventListener('mousedown', _gardenMouseDown);
+    canvas.addEventListener('mousemove', _gardenMouseMove);
+    canvas.addEventListener('mouseup',   _gardenMouseUp);
+    canvas.addEventListener('mouseleave',_gardenMouseUp);
+    canvas.addEventListener('wheel',     _gardenWheel, { passive: true });
+
+    // ── 触摸 ──
+    canvas.addEventListener('touchstart', _gardenTouchStart, { passive: true });
+    canvas.addEventListener('touchmove',  _gardenTouchMove,  { passive: false });
+    canvas.addEventListener('touchend',   _gardenTouchEnd);
+}
+
+function _gardenMouseDown(e) {
+    if (!_gardenOrbit.active || typeof insideHouse !== 'undefined' && insideHouse) return;
+    if (clawGameActive) return;
+    _gardenOrbit.dragging = true;
+    _gardenOrbit.lastX = e.clientX;
+    _gardenOrbit.lastY = e.clientY;
+}
+
+function _gardenMouseMove(e) {
+    if (!_gardenOrbit.dragging) return;
+    const dx = e.clientX - _gardenOrbit.lastX;
+    const dy = e.clientY - _gardenOrbit.lastY;
+    _gardenOrbit.lastX = e.clientX;
+    _gardenOrbit.lastY = e.clientY;
+    _applyGardenOrbit(dx, dy);
+}
+
+function _gardenMouseUp() {
+    _gardenOrbit.dragging = false;
+}
+
+function _gardenWheel(e) {
+    if (!_gardenOrbit.active || typeof insideHouse !== 'undefined' && insideHouse) return;
+    _gardenOrbit.radius = THREE.MathUtils.clamp(
+        _gardenOrbit.radius + e.deltaY * 0.05, 8, 50
+    );
+    _updateGardenCamera();
+}
+
+// ── 触摸事件 ──
+function _gardenTouchStart(e) {
+    if (!_gardenOrbit.active || typeof insideHouse !== 'undefined' && insideHouse) return;
+    if (clawGameActive) return;
+    if (e.touches.length === 1) {
+        _gardenOrbit.dragging = true;
+        _gardenOrbit.lastX = e.touches[0].clientX;
+        _gardenOrbit.lastY = e.touches[0].clientY;
+    } else if (e.touches.length === 2) {
+        // 双指缩放起始距离
+        _gardenOrbit.pinchDist = _getTouchDist(e.touches);
+    }
+}
+
+function _gardenTouchMove(e) {
+    if (!_gardenOrbit.active || typeof insideHouse !== 'undefined' && insideHouse) return;
+    if (clawGameActive) return;
+
+    if (e.touches.length === 1 && _gardenOrbit.dragging) {
+        e.preventDefault();
+        const dx = e.touches[0].clientX - _gardenOrbit.lastX;
+        const dy = e.touches[0].clientY - _gardenOrbit.lastY;
+        _gardenOrbit.lastX = e.touches[0].clientX;
+        _gardenOrbit.lastY = e.touches[0].clientY;
+        _applyGardenOrbit(dx, dy);
+    } else if (e.touches.length === 2) {
+        e.preventDefault();
+        const dist = _getTouchDist(e.touches);
+        const delta = _gardenOrbit.pinchDist - dist;
+        _gardenOrbit.radius = THREE.MathUtils.clamp(
+            _gardenOrbit.radius + delta * 0.05, 8, 50
+        );
+        _gardenOrbit.pinchDist = dist;
+        _updateGardenCamera();
+    }
+}
+
+function _gardenTouchEnd() {
+    _gardenOrbit.dragging = false;
+}
+
+function _getTouchDist(touches) {
+    const dx = touches[0].clientX - touches[1].clientX;
+    const dy = touches[0].clientY - touches[1].clientY;
+    return Math.sqrt(dx * dx + dy * dy);
+}
+
+function _applyGardenOrbit(dx, dy) {
+    _gardenOrbit.theta -= dx * 0.006;
+    _gardenOrbit.phi   -= dy * 0.004;
+    // 限制垂直角：不能翻转，不能看到地面以下
+    _gardenOrbit.phi = THREE.MathUtils.clamp(_gardenOrbit.phi, 0.15, 1.2);
+    _updateGardenCamera();
+}
+
+function _updateGardenCamera() {
+    if (typeof insideHouse !== 'undefined' && insideHouse) return;
+    if (clawGameActive) return;
+    const r   = _gardenOrbit.radius;
+    const phi = _gardenOrbit.phi;
+    const theta = _gardenOrbit.theta;
+    camera.position.set(
+        _gardenOrbit.target.x + r * Math.cos(phi) * Math.sin(theta),
+        _gardenOrbit.target.y + r * Math.sin(phi),
+        _gardenOrbit.target.z + r * Math.cos(phi) * Math.cos(theta)
+    );
+    camera.lookAt(_gardenOrbit.target);
+}
