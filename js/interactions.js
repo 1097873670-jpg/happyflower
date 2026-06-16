@@ -362,24 +362,74 @@ function showFerrisWheel() {
     modal.onclick = e => { if (e.target === modal) modal.style.display = 'none'; };
 }
 
-// ─────────────────────────────────────────────
-// 背景音乐
-// ─────────────────────────────────────────────
 function setupBackgroundMusic() {
-    const bgMusic = new Audio(CONFIG.music.url);
-    bgMusic.loop = true;
-    bgMusic.volume = CONFIG.music.volume;
     const btn = document.getElementById('music-control');
     let playing = false;
-    btn.addEventListener('click', () => {
-        if (playing) {
-            bgMusic.pause();
-            btn.textContent = '🎵 点击播放音乐';
-        } else {
-            bgMusic.play().catch(() => {});
-            btn.textContent = '🔇 点击暂停音乐';
+    let bgAudioCtx = null;
+    let bgLoopTimer = null;
+
+    // 生日快乐音符（和室内一样）
+    const NOTES = [
+        ['G4',0.75],['G4',0.25],['A4',1],['G4',1],['C5',1],['B4',2],
+        ['G4',0.75],['G4',0.25],['A4',1],['G4',1],['D5',1],['C5',2],
+        ['G4',0.75],['G4',0.25],['G5',1],['E5',1],['C5',1],['B4',1],['A4',2],
+        ['F5',0.75],['F5',0.25],['E5',1],['C5',1],['D5',1],['C5',2]
+    ];
+    const FREQ = {
+        'C4':261.63,'D4':293.66,'E4':329.63,'F4':349.23,
+        'G4':392.00,'A4':440.00,'B4':493.88,
+        'C5':523.25,'D5':587.33,'E5':659.25,'F5':698.46,
+        'G5':783.99
+    };
+
+    const totalBeats = NOTES.reduce((s, n) => s + n[1], 0);
+    const beatDur = 60 / 72; // BPM=72，比室内稍慢一点
+    const totalDur = totalBeats * beatDur;
+
+    function playLoop() {
+        if (!bgAudioCtx || !playing) return;
+        const start = bgAudioCtx.currentTime + 0.05;
+        let t = start;
+        NOTES.forEach(([note, beats]) => {
+            const freq = FREQ[note];
+            if (!freq) { t += beats * beatDur; return; }
+            const osc  = bgAudioCtx.createOscillator();
+            const gain = bgAudioCtx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(freq, t);
+            gain.gain.setValueAtTime(0, t);
+            gain.gain.linearRampToValueAtTime(0.15, t + 0.02);  // 音量0.15，比室内轻
+            gain.gain.exponentialRampToValueAtTime(0.06, t + beats * beatDur * 0.7);
+            gain.gain.linearRampToValueAtTime(0, t + beats * beatDur * 0.95);
+            osc.connect(gain);
+            gain.connect(bgAudioCtx.destination);
+            osc.start(t);
+            osc.stop(t + beats * beatDur);
+            t += beats * beatDur;
+        });
+        bgLoopTimer = setTimeout(playLoop, totalDur * 1000);
+    }
+
+    function startMusic() {
+        bgAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        playing = true;
+        playLoop();
+        btn.textContent = '🔇 点击暂停音乐';
+    }
+
+    function stopMusic() {
+        playing = false;
+        if (bgLoopTimer) { clearTimeout(bgLoopTimer); bgLoopTimer = null; }
+        if (bgAudioCtx) {
+            try { bgAudioCtx.close(); } catch(e) {}
+            bgAudioCtx = null;
         }
-        playing = !playing;
+        btn.textContent = '🎵 点击播放音乐';
+    }
+
+    btn.addEventListener('click', () => {
+        if (playing) stopMusic();
+        else startMusic();
     });
 }
 
