@@ -60,9 +60,14 @@ async function loadPlantedFlowers() {
 // ─────────────────────────────────────────────
 async function savePlantedFlowers(flowerData) {
     try {
-        await supabaseFetch('/rest/v1/planted_flowers', {
+        const res = await fetch(SUPABASE_URL + '/rest/v1/planted_flowers', {
             method: 'POST',
-            headers: { 'Prefer': 'return=minimal' },
+            headers: {
+                'apikey': SUPABASE_KEY,
+                'Authorization': 'Bearer ' + SUPABASE_KEY,
+                'Content-Type': 'application/json',
+                'Prefer': 'return=minimal'
+            },
             body: JSON.stringify({
                 x: flowerData.x,
                 z: flowerData.z,
@@ -71,7 +76,15 @@ async function savePlantedFlowers(flowerData) {
                 color: flowerData.color
             })
         });
-        console.log('✅ 花朵已保存到云端');
+        // ✅ 204 没有响应体，不能解析 JSON
+        if (res.status === 204 || res.status === 201) {
+            console.log('✅ 花朵已保存到云端');
+            return;
+        }
+        if (!res.ok) {
+            const err = await res.text();
+            throw new Error(err);
+        }
     } catch(e) {
         console.warn('云端保存失败，改用本地：', e.message);
         _saveLocalFlower(flowerData);
