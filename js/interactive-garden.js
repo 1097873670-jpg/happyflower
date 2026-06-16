@@ -2,7 +2,7 @@
 
 // ✅ 填入你的 Supabase 配置
 const SUPABASE_URL = 'https://grtvkhynvnzktjbwdiir.supabase.co';      // 如 https://xxx.supabase.co
-const SUPABASE_KEY = 'sb_publishable_9WSmB5E23b7C_XmyMGoi1A_zaBv8XSP';  // eyJ 开头
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdydHZraHludm56a3RqYndkaWlyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE1MTY1NDQsImV4cCI6MjA5NzA5MjU0NH0._E9ls8bFglqi4htZ2SE43M6SHHPOWNLIGf7Y0iPIRt0';  // eyJ 开头
 
 
 let clickHistory = [ ];
