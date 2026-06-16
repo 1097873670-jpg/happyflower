@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>香香花园 💕</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <canvas id="canvas3d"></canvas>
+
+    <div id="loading">
+        <div class="spinner"></div>
+        <p>正在准备惊喜...</p>
+    </div>
+
+    <div id="hint" class="hint">点击地面移动长发小人，其他角色会跟随 💕</div>
+
+    <div id="claw-ui" class="interaction-ui" style="display:none;">
+   
+         <button onclick="showClawRecord()">🎁 查看收藏</button>
+        <p>按 <span class="key">E</span> 抓娃娃</p>
+    </div>
+
+    <div id="ferris-ui" class="interaction-ui" style="display:none;">
+        <p>按 <span class="key">F</span> 乘坐摩天轮</p>
+    </div>
+    
+
+    <div id="music-control">🎵 点击播放音乐</div>
+
+    <!-- 礼物弹窗 -->
+    <div id="gift-modal" class="modal">
+        <div class="modal-content card">
+            <span class="close">&times;</span>
+            <div class="gift-box">
+                <img id="gift-image" src="" alt="礼物">
+                <h2 id="gift-name"></h2>
+                <p id="gift-description"></p>
+                <div id="gift-message" class="message-box"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 摩天轮弹窗 -->
+    <div id="ferris-modal" class="modal">
+        <div class="modal-content card">
+            <span class="close">&times;</span>
+            <div class="gift-box">
+                <img id="ferris-image" src="" alt="摩天轮">
+                <h2 id="ferris-title"></h2>
+                <p id="ferris-description"></p>
+                <div id="ferris-message" class="message-box"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/three@0.150.0/build/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tweenjs/tween.js@18.6.4/dist/tween.umd.js"></script>
+    <script src="js/config.js"></script>
+    <script src="js/characters.js"></script>
+    <script src="js/buildings.js"></script>
+    <script src="js/particles.js"></script>
+    <script src="js/interactions.js"></script>
+    <script src="js/house-interior.js"></script>
+    <script src="js/interactive-garden.js"></script>
+    <script src="js/rose-garden.js"></script>
+    <script src="js/fitness-area.js"></script> 
+    <script src="js/garden-objects.js"></script>
+    <script src="js/cloud-flowers.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>
